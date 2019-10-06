@@ -6,4 +6,7 @@
     <string name="linear_2_description">And me too!</string>
     <string name="im_button">I\'m counter button</string>
     <string name="here_will_be_counter">Here will be counter</string>
+    <string name="roll_the_dice">Roll the dice!</string>
+    <string name="max_value">Max value:</string>
+    <string name="wrong_number">Wrong number!</string>
 </resources>
