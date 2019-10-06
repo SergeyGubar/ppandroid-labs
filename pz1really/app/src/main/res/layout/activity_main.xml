@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+
+        <TextView
+            android:id="@+id/hello_from_relative_layout_text_view"
+            style="@style/TextAppearance.AppCompat.Body2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/padding_normal"
+            android:gravity="center"
+            android:text="@string/relative_description" />
+
+        <TextView
+            android:id="@+id/im_to_right_text_view"
+            style="@style/TextAppearance.AppCompat.Body2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/padding_normal"
+            android:layout_toEndOf="@id/hello_from_relative_layout_text_view"
+            android:gravity="center"
+            android:text="@string/relative_to_end" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/im_in_linear_layout_text_view"
+            style="@style/TextAppearance.AppCompat.Body2"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="@string/linear_description" />
+
+        <TextView
+            android:id="@+id/im_in_linear_2_layout_text_view"
+            style="@style/TextAppearance.AppCompat.Body2"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="@string/linear_2_description" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/counter_button"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/im_button" />
+
+        <TextView
+            android:id="@+id/counter_text_view"
+            android:text="@string/here_will_be_counter"
+            android:layout_width="wrap_content"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/counter_button"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/padding_normal" />
+    </RelativeLayout>
+
+</LinearLayout>

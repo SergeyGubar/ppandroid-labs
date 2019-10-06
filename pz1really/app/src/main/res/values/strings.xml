@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Pz 1 Really</string>
+    <string name="relative_description">Hello from Relative Layout!</string>
+    <string name="relative_to_end">I\'m placed relatively.</string>
+    <string name="linear_description">I\'m placed in vertical linear layout.</string>
+    <string name="linear_2_description">And me too!</string>
+    <string name="im_button">I\'m counter button</string>
+    <string name="here_will_be_counter">Here will be counter</string>
+</resources>
