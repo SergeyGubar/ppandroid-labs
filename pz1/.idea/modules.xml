@@ -4,8 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PPAndroidPZ1.iml" filepath="$PROJECT_DIR$/PPAndroidPZ1.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/pz1-PPAndroidPZ1.iml" filepath="$PROJECT_DIR$/pz1-PPAndroidPZ1.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/pz1-app.iml" filepath="$PROJECT_DIR$/app/pz1-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pz1.iml" filepath="$PROJECT_DIR$/.idea/pz1.iml" />
     </modules>
   </component>
 </project>
