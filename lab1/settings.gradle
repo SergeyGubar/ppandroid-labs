@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name='Lab 1 Gubar Sergey'
