@@ -12,4 +12,5 @@
     <string name="choose_option">Choose action</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="date">Date</string>
 </resources>

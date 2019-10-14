@@ -69,6 +69,11 @@ public class FileUtils {
         writeToFile(context, gson.toJson(notes));
     }
 
+    static void writeNotes(Context context, List<Note> newNotes) {
+        Gson gson = new Gson();
+        writeToFile(context, gson.toJson(newNotes));
+    }
+
     static void appendNote(Context context, Note newNote) {
         List<Note> notes = readNotes(context);
         if (notes == null) {

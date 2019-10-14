@@ -26,12 +26,13 @@ public class MainActivityJava extends AppCompatActivity {
 
     private NotesAdapter adapter;
     private RecyclerView recycler;
+    private List<Note> notes = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        adapter = new NotesAdapter(new ArrayList<>(), this::onNoteClicked);
+        adapter = new NotesAdapter(notes, this::onNoteClicked);
 
 //        List<Note> notes = new ArrayList<>();
 //        notes.add(new Note("name", "desc", Importance.HIGH, new Date(), new Date()));
@@ -82,11 +83,17 @@ public class MainActivityJava extends AppCompatActivity {
     }
 
     private void onNoteClicked(Note note) {
-        DialotUtil.showEditDeleteDialog(this, new EditDeleteListener() {
+        new DialotUtil().showEditDeleteDialog(this, new EditDeleteListener() {
             @Override
             public void deleteClicked() {
-                Toast.makeText(MainActivityJava.this, "delete " + note.name, Toast.LENGTH_SHORT).show();
-
+                int index = notes.indexOf(note);
+                if (index != -1) {
+                    notes.remove(index);
+                    FileUtils.writeNotes(MainActivityJava.this, notes);
+                    adapter.notifyItemRemoved(index);
+                } else {
+                    Log.e(TAG, "deleteClicked: remove failed no such element");
+                }
             }
 
             @Override

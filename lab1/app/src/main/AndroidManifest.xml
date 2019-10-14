@@ -11,7 +11,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".AddNoteActivity"></activity>
+        <activity android:name=".EditNoteActivity"></activity>
+        <activity android:name=".AddNoteActivity" />
         <activity android:name=".MainActivity" />
         <activity android:name=".MainActivityJava">
             <intent-filter>

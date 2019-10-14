@@ -1,8 +1,12 @@
 package com.example.lab1gubarsergey;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -65,6 +69,12 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                     clickListener.onClick(note);
                 }
             });
+
+
+            byte[] decodedString = Base64.decode(note.image, Base64.DEFAULT);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+            ((ImageView)itemView.findViewById(R.id.note_image_view)).setImageBitmap(decodedByte);
             ((TextView)itemView.findViewById(R.id.note_name_text_view)).setText(note.name);
             ((TextView)itemView.findViewById(R.id.note_description_text_view)).setText(note.description);
             ((TextView)itemView.findViewById(R.id.note_importance_text_view)).setText(note.importance.toString());
