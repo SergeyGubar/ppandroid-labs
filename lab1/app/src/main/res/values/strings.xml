@@ -8,4 +8,5 @@
     <string name="low">Low</string>
     <string name="save">Save</string>
     <string name="invalid_data">Invalid data!</string>
+    <string name="notes_are_empty">Notes are empty!</string>
 </resources>

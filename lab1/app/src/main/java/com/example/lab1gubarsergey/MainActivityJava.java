@@ -7,12 +7,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,12 +76,12 @@ public class MainActivityJava extends AppCompatActivity {
     }
 
     private void loadDataFromFile() {
-        String content = FileUtils.readFromFile(this);
+        List<Note> content = FileUtils.readNotes(this);
         Log.d(TAG, "loadDataFromFile: data " + content);
         if (content != null) {
-            List<Note> newNotes = new ArrayList<>();
-            newNotes.add(new Note("Name", "name", Importance.HIGH, new Date(), new Date()));
-            adapter.addNotes(newNotes);
+            adapter.swap(content);
+        } else {
+            Toast.makeText(this, R.string.notes_are_empty, Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -63,18 +63,24 @@ public class AddNoteActivity extends AppCompatActivity {
     }
 
     private void save() {
-
-        Gson gson = new Gson();
-        Note note = new Note("name", "description", Importance.HIGH, new Date(), new Date());
-        String json = gson.toJson(note);
-
-        Log.d(TAG, "save: json " + json);
-
-        Note jsonNote = gson.fromJson(json, Note.class);
-        Log.d(TAG, "save: from json " + jsonNote);
-
-//        FileUtils.writeToFile(this, descriptionEditText.getText().toString());
-//        setResult(AddNoteActivity.RESULT_OK);
-//        finish();
+        // TODO: Date + image
+        int checkedRadiobuttonId = importanceRadiogroup.getCheckedRadioButtonId();
+        Importance importance = null;
+        switch (checkedRadiobuttonId) {
+            case R.id.add_note_low_radiobutton:
+                importance = Importance.LOW;
+                break;
+            case R.id.add_note_medium_radiobutton:
+                importance = Importance.MEDIUM;
+                break;
+            case R.id.add_note_high_radiobutton:
+                importance = Importance.HIGH;
+                break;
+        }
+        Note note = new Note(nameEditText.getText().toString(), descriptionEditText.getText().toString(), importance, new Date(), new Date());
+        Log.d(TAG, "save: note = " + note);
+        FileUtils.appendNote(this, note);
+        setResult(AddNoteActivity.RESULT_OK);
+        finish();
     }
 }
