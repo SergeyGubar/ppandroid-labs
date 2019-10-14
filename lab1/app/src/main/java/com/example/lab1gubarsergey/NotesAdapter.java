@@ -1,9 +1,7 @@
 package com.example.lab1gubarsergey;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +36,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         notifyDataSetChanged();
     }
 
+    public void removeItem(int index) {
+        this.notes.remove(index);
+        this.notifyItemRemoved(index);
+    }
+
     @NonNull
     @Override
     public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -68,8 +71,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             });
 
 
-            byte[] decodedString = Base64.decode(note.image, Base64.DEFAULT);
-            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            Bitmap bitmap = BitmapUtils.fromBase64(note.image);
 
             int color = 0;
 
@@ -85,10 +87,10 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                     break;
             }
 
-            ((ImageView)itemView.findViewById(R.id.note_image_view)).setImageBitmap(decodedByte);
-            ((TextView)itemView.findViewById(R.id.note_name_text_view)).setText(note.name);
-            ((TextView)itemView.findViewById(R.id.note_description_text_view)).setText(note.description);
-            ((TextView)itemView.findViewById(R.id.note_end_text_view)).setText(note.end.toString());
+            ((ImageView) itemView.findViewById(R.id.note_image_view)).setImageBitmap(bitmap);
+            ((TextView) itemView.findViewById(R.id.note_name_text_view)).setText(note.name);
+            ((TextView) itemView.findViewById(R.id.note_description_text_view)).setText(note.description);
+            ((TextView) itemView.findViewById(R.id.note_end_text_view)).setText(note.end.toString());
             itemView.findViewById(R.id.note_importance_image_view).setBackgroundColor(color);
 
         }

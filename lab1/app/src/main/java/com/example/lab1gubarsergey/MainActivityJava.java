@@ -66,7 +66,7 @@ public class MainActivityJava extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == NEW_NOTE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+        if ((requestCode == NEW_NOTE_REQUEST_CODE || requestCode == EDIT_NOTE_REQUEST_CODE) && resultCode == Activity.RESULT_OK) {
             loadDataFromFile();
         }
     }
@@ -90,7 +90,7 @@ public class MainActivityJava extends AppCompatActivity {
                 if (index != -1) {
                     notes.remove(index);
                     FileUtils.writeNotes(MainActivityJava.this, notes);
-                    adapter.notifyItemRemoved(index);
+                    adapter.removeItem(index);
                 } else {
                     Log.e(TAG, "deleteClicked: remove failed no such element");
                 }
@@ -98,14 +98,12 @@ public class MainActivityJava extends AppCompatActivity {
 
             @Override
             public void editClicked() {
-                // TODO: edit note
-                Toast.makeText(MainActivityJava.this, "edit" + note.name, Toast.LENGTH_SHORT).show();
+                startActivityForResult(EditNoteActivity.makeIntent(MainActivityJava.this, note.guid), EDIT_NOTE_REQUEST_CODE);
             }
         });
     }
 
     private void filterNotes(ImportanceFilter filter) {
-
         Predicate<? super Note> predicate = null;
         switch (filter) {
             case ALL:

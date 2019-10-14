@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Lab 1 Gubar Sergey</string>
+    <string name="add">Додати</string>
+    <string name="name">Ім\'я</string>
+    <string name="description">Опис</string>
+    <string name="high">Високий</string>
+    <string name="medium">Середній</string>
+    <string name="low">Низький</string>
+    <string name="save">Зберегти</string>
+    <string name="invalid_data">Некоректні дані!</string>
+    <string name="notes_are_empty">Замітки пусті!</string>
+    <string name="choose_option">Виберіть дію</string>
+    <string name="edit">Редагувати</string>
+    <string name="delete">Видалити</string>
+    <string name="date">Дата</string>
+    <string name="filter">Фільтр</string>
+    <string name="all">Усі</string>
+</resources>

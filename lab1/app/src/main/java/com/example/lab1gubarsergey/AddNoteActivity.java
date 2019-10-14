@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
-import android.util.Base64;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
@@ -106,7 +104,6 @@ public class AddNoteActivity extends AppCompatActivity {
     }
 
     private void save() {
-        // TODO: image
         int checkedRadiobuttonId = importanceRadiogroup.getCheckedRadioButtonId();
         Importance importance = null;
         switch (checkedRadiobuttonId) {
@@ -137,12 +134,7 @@ public class AddNoteActivity extends AppCompatActivity {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
                     noteImage.setImageBitmap(bitmap);
-
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-                    byte[] byteArray = byteArrayOutputStream .toByteArray();
-                    String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                    this.image = encoded;
+                    this.image = BitmapUtils.toBase64(bitmap);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

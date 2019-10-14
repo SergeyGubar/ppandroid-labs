@@ -14,6 +14,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.stream.IntStream;
 
 public class FileUtils {
 
@@ -82,6 +85,29 @@ public class FileUtils {
         notes.add(newNote);
         Gson gson = new Gson();
         writeToFile(context, gson.toJson(notes));
+    }
+
+    static Note findNote(Context context, String id) {
+        List<Note> notes = readNotes(context);
+        Objects.requireNonNull(notes);
+        OptionalInt index = IntStream.range(0, notes.size())
+                .filter(i -> notes.get(i).guid.equals(id))
+                .findFirst();
+        if (index.isPresent()) {
+            return notes.get(index.getAsInt());
+        } else {
+            Log.e(TAG, "findNote: error, note not found");
+            return null;
+        }
+    }
+
+    static void updateNote(Context context, Note note) {
+        List<Note> notes = readNotes(context);
+        Objects.requireNonNull(notes);
+        int index = notes.indexOf(note);
+        if (index == -1) throw new IllegalStateException("Note not found");
+        notes.set(index, note);
+        writeNotes(context, notes);
     }
 
     private static String convertStreamToString(InputStream is) throws Exception {
