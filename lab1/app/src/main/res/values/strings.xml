@@ -9,4 +9,7 @@
     <string name="save">Save</string>
     <string name="invalid_data">Invalid data!</string>
     <string name="notes_are_empty">Notes are empty!</string>
+    <string name="choose_option">Choose action</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

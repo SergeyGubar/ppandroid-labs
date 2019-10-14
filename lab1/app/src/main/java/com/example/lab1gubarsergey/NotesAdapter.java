@@ -10,13 +10,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+@FunctionalInterface
+interface ClickListener<T> {
+    void onClick(T item);
+}
+
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
 
     private List<Note> notes;
+    private ClickListener<Note> clickListener;
 
 
-    public NotesAdapter(List<Note> notes) {
+    public NotesAdapter(List<Note> notes, ClickListener<Note> listener) {
         this.notes = notes;
+        this.clickListener = listener;
     }
 
     public void addNotes(List<Note> notes) {
@@ -53,6 +60,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         }
 
         void bind(Note note) {
+            itemView.setOnClickListener((v) -> {
+                if (clickListener != null) {
+                    clickListener.onClick(note);
+                }
+            });
             ((TextView)itemView.findViewById(R.id.note_name_text_view)).setText(note.name);
             ((TextView)itemView.findViewById(R.id.note_description_text_view)).setText(note.description);
             ((TextView)itemView.findViewById(R.id.note_importance_text_view)).setText(note.importance.toString());

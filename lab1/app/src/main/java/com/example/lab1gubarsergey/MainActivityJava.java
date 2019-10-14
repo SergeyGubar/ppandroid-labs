@@ -15,11 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class MainActivityJava extends AppCompatActivity {
@@ -35,7 +31,7 @@ public class MainActivityJava extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        adapter = new NotesAdapter(new ArrayList<>());
+        adapter = new NotesAdapter(new ArrayList<>(), this::onNoteClicked);
 
 //        List<Note> notes = new ArrayList<>();
 //        notes.add(new Note("name", "desc", Importance.HIGH, new Date(), new Date()));
@@ -83,5 +79,20 @@ public class MainActivityJava extends AppCompatActivity {
         } else {
             Toast.makeText(this, R.string.notes_are_empty, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void onNoteClicked(Note note) {
+        DialotUtil.showEditDeleteDialog(this, new EditDeleteListener() {
+            @Override
+            public void deleteClicked() {
+                Toast.makeText(MainActivityJava.this, "delete " + note.name, Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void editClicked() {
+                Toast.makeText(MainActivityJava.this, "edit" + note.name, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
