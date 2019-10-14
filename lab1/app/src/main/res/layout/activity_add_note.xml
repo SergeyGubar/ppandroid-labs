@@ -6,4 +6,81 @@
     android:layout_height="match_parent"
     tools:context=".AddNoteActivity">
 
+    <EditText
+        android:id="@+id/add_note_name_edit_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="@string/name"
+        android:importantForAutofill="no"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Some Name" />
+
+    <EditText
+        android:id="@+id/add_note_desc_edit_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="@string/description"
+        android:importantForAutofill="no"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="@+id/add_note_name_edit_text"
+        app:layout_constraintStart_toStartOf="@+id/add_note_name_edit_text"
+        app:layout_constraintTop_toBottomOf="@+id/add_note_name_edit_text"
+        tools:text="Description" />
+
+    <RadioGroup
+        android:id="@+id/add_note_radiogroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/add_note_desc_edit_text">
+
+
+        <RadioButton
+            android:id="@+id/add_note_high_radiobutton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/high" />
+
+        <RadioButton
+            android:id="@+id/add_note_medium_radiobutton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/medium" />
+
+        <RadioButton
+            android:id="@+id/add_note_low_radiobutton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/low" />
+
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/add_note_save_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/save"
+        app:layout_constraintEnd_toEndOf="@+id/add_note_radiogroup"
+        app:layout_constraintStart_toStartOf="@+id/add_note_radiogroup"
+        app:layout_constraintTop_toBottomOf="@+id/add_note_radiogroup" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

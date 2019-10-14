@@ -24,6 +24,12 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         notifyDataSetChanged();
     }
 
+    public void swap(List<Note> notes) {
+        this.notes.clear();
+        this.notes.addAll(notes);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -47,8 +53,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         }
 
         void bind(Note note) {
+            ((TextView)itemView.findViewById(R.id.note_name_text_view)).setText(note.name);
             ((TextView)itemView.findViewById(R.id.note_description_text_view)).setText(note.description);
-            ((TextView)itemView.findViewById(R.id.note_name_text_view)).setText(note.description);
             ((TextView)itemView.findViewById(R.id.note_importance_text_view)).setText(note.importance.toString());
             ((TextView)itemView.findViewById(R.id.note_start_text_view)).setText(note.end.toString());
             ((TextView)itemView.findViewById(R.id.note_end_text_view)).setText(note.start.toString());

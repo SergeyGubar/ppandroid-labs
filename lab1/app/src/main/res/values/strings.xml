@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">Lab 1 Gubar Sergey</string>
     <string name="add">Add</string>
+    <string name="name">Name</string>
+    <string name="description">Description</string>
+    <string name="high">High</string>
+    <string name="medium">Medium</string>
+    <string name="low">Low</string>
+    <string name="save">Save</string>
+    <string name="invalid_data">Invalid data!</string>
 </resources>
