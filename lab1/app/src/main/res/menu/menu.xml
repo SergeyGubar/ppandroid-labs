@@ -3,8 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/add_note"
-        app:showAsAction="never"
-        android:title="@string/add">
+        app:showAsAction="ifRoom"
+        android:title="@string/add"/>
+
+    <item
+        android:id="@+id/filter"
+        app:showAsAction="ifRoom"
+        android:title="@string/filter">
+
 
     </item>
 </menu>

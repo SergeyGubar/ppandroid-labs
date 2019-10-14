@@ -24,7 +24,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toBottomOf="@+id/note_name_text_view"
-        app:layout_constraintEnd_toStartOf="@+id/note_start_text_view"
+        app:layout_constraintEnd_toStartOf="@+id/note_end_text_view"
         app:layout_constraintStart_toEndOf="@+id/note_name_text_view"
         app:layout_constraintTop_toTopOf="@+id/note_name_text_view"
         tools:text="Description" />
@@ -40,32 +40,23 @@
         app:srcCompat="@mipmap/ic_launcher" />
 
     <TextView
-        android:id="@+id/note_importance_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Importance" />
-
-    <TextView
-        android:id="@+id/note_start_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="@+id/note_importance_text_view"
-        app:layout_constraintStart_toStartOf="@+id/note_importance_text_view"
-        app:layout_constraintTop_toBottomOf="@+id/note_importance_text_view"
-        tools:text="Start" />
-
-    <TextView
         android:id="@+id/note_end_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="@+id/note_start_text_view"
-        app:layout_constraintStart_toStartOf="@+id/note_start_text_view"
-        app:layout_constraintTop_toBottomOf="@+id/note_start_text_view"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintStart_toStartOf="@+id/note_importance_image_view"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="End" />
+
+    <ImageView
+        android:id="@+id/note_importance_image_view"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@mipmap/ic_launcher" />
 </androidx.constraintlayout.widget.ConstraintLayout>

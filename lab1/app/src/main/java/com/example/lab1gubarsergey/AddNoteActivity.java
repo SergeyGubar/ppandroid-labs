@@ -5,7 +5,6 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -121,7 +120,7 @@ public class AddNoteActivity extends AppCompatActivity {
                 importance = Importance.HIGH;
                 break;
         }
-        Note note = new Note(nameEditText.getText().toString(), descriptionEditText.getText().toString(), importance, new Date(), date, image);
+        Note note = new Note(nameEditText.getText().toString(), descriptionEditText.getText().toString(), importance, date, image);
         Log.d(TAG, "save: note = " + note);
         FileUtils.appendNote(this, note);
         setResult(AddNoteActivity.RESULT_OK);

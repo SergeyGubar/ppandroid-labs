@@ -17,6 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MainActivityJava extends AppCompatActivity {
 
@@ -34,13 +37,6 @@ public class MainActivityJava extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         adapter = new NotesAdapter(notes, this::onNoteClicked);
 
-//        List<Note> notes = new ArrayList<>();
-//        notes.add(new Note("name", "desc", Importance.HIGH, new Date(), new Date()));
-//        notes.add(new Note("name1", "desc1", Importance.MEDIUM, new Date(), new Date()));
-//        notes.add(new Note("name2", "desc2", Importance.LOW, new Date(), new Date()));
-//        adapter.addNotes(notes);
-
-
         recycler = findViewById(R.id.notes_recycler);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -57,9 +53,12 @@ public class MainActivityJava extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.add_note) {
-            startActivityForResult(AddNoteActivity.makeIntent(this), NEW_NOTE_REQUEST_CODE);
-            return true;
+        switch (item.getItemId()) {
+            case R.id.add_note:
+                startActivityForResult(AddNoteActivity.makeIntent(this), NEW_NOTE_REQUEST_CODE);
+                return true;
+            case R.id.filter:
+                DialogUtil.showFilterDialog(this, this::filterNotes);
         }
         return false;
     }
@@ -76,14 +75,15 @@ public class MainActivityJava extends AppCompatActivity {
         List<Note> content = FileUtils.readNotes(this);
         Log.d(TAG, "loadDataFromFile: data " + content);
         if (content != null) {
-            adapter.swap(content);
+            this.notes = content;
+            adapter.swap(notes);
         } else {
             Toast.makeText(this, R.string.notes_are_empty, Toast.LENGTH_SHORT).show();
         }
     }
 
     private void onNoteClicked(Note note) {
-        new DialotUtil().showEditDeleteDialog(this, new EditDeleteListener() {
+        DialogUtil.showEditDeleteDialog(this, new EditDeleteListener() {
             @Override
             public void deleteClicked() {
                 int index = notes.indexOf(note);
@@ -98,8 +98,31 @@ public class MainActivityJava extends AppCompatActivity {
 
             @Override
             public void editClicked() {
+                // TODO: edit note
                 Toast.makeText(MainActivityJava.this, "edit" + note.name, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void filterNotes(ImportanceFilter filter) {
+
+        Predicate<? super Note> predicate = null;
+        switch (filter) {
+            case ALL:
+                predicate = note -> true;
+                break;
+            case LOW:
+                predicate = note -> note.importance == Importance.LOW;
+                break;
+            case MEDIUM:
+                predicate = note -> note.importance == Importance.MEDIUM;
+                break;
+            case HIGH:
+                predicate = note -> note.importance == Importance.HIGH;
+                break;
+        }
+        Objects.requireNonNull(predicate);
+        List<Note> notes = this.notes.stream().filter(predicate).collect(Collectors.toList());
+        adapter.swap(notes);
     }
 }

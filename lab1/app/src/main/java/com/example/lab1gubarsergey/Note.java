@@ -10,15 +10,13 @@ public class Note {
     String name;
     String description;
     Importance importance;
-    Date start;
     Date end;
     String image;
 
-    public Note(String name, String description, Importance importance, Date start, Date end, String image) {
+    public Note(String name, String description, Importance importance, Date end, String image) {
         this.name = name;
         this.description = description;
         this.importance = importance;
-        this.start = start;
         this.end = end;
         this.image = image;
     }
@@ -30,7 +28,6 @@ public class Note {
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", importance=" + importance +
-                ", start=" + start +
                 ", end=" + end +
                 '}';
     }
@@ -43,13 +40,12 @@ public class Note {
         return Objects.equals(name, note.name) &&
                 Objects.equals(description, note.description) &&
                 importance == note.importance &&
-                Objects.equals(start, note.start) &&
                 Objects.equals(end, note.end);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, importance, start, end);
+        return Objects.hash(name, description, importance, end);
     }
 }
 

@@ -2,6 +2,7 @@ package com.example.lab1gubarsergey;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @FunctionalInterface
@@ -21,18 +23,13 @@ interface ClickListener<T> {
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
 
-    private List<Note> notes;
+    private List<Note> notes = new ArrayList<>();
     private ClickListener<Note> clickListener;
 
 
     public NotesAdapter(List<Note> notes, ClickListener<Note> listener) {
-        this.notes = notes;
-        this.clickListener = listener;
-    }
-
-    public void addNotes(List<Note> notes) {
         this.notes.addAll(notes);
-        notifyDataSetChanged();
+        this.clickListener = listener;
     }
 
     public void swap(List<Note> notes) {
@@ -74,12 +71,25 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             byte[] decodedString = Base64.decode(note.image, Base64.DEFAULT);
             Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
+            int color = 0;
+
+            switch (note.importance) {
+                case LOW:
+                    color = Color.parseColor("#00ff00");
+                    break;
+                case MEDIUM:
+                    color = Color.parseColor("#ffa500");
+                    break;
+                case HIGH:
+                    color = Color.parseColor("#ff0000");
+                    break;
+            }
+
             ((ImageView)itemView.findViewById(R.id.note_image_view)).setImageBitmap(decodedByte);
             ((TextView)itemView.findViewById(R.id.note_name_text_view)).setText(note.name);
             ((TextView)itemView.findViewById(R.id.note_description_text_view)).setText(note.description);
-            ((TextView)itemView.findViewById(R.id.note_importance_text_view)).setText(note.importance.toString());
-            ((TextView)itemView.findViewById(R.id.note_start_text_view)).setText(note.end.toString());
-            ((TextView)itemView.findViewById(R.id.note_end_text_view)).setText(note.start.toString());
+            ((TextView)itemView.findViewById(R.id.note_end_text_view)).setText(note.end.toString());
+            itemView.findViewById(R.id.note_importance_image_view).setBackgroundColor(color);
 
         }
     }

@@ -13,4 +13,6 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="date">Date</string>
+    <string name="filter">Filter</string>
+    <string name="all">All</string>
 </resources>
