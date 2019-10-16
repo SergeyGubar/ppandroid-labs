@@ -10,7 +10,11 @@
         android:id="@+id/filter"
         app:showAsAction="ifRoom"
         android:title="@string/filter">
-
-
     </item>
+
+    <item android:id="@+id/search"
+        android:title="@string/search"
+        android:icon="@drawable/ic_search_white_24dp"
+        app:showAsAction="collapseActionView|ifRoom"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
 </menu>

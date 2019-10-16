@@ -1,8 +1,11 @@
 package com.example.lab1gubarsergey;
 
 import android.app.Activity;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MainActivityJava extends AppCompatActivity {
@@ -42,12 +47,34 @@ public class MainActivityJava extends AppCompatActivity {
         recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
         loadDataFromFile();
+        handleIntent(getIntent());
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
+
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (TextUtils.isEmpty(newText)) {
+                    searchNote(null);
+                }
+                return true;
+            }
+        });
         return true;
     }
 
@@ -103,6 +130,19 @@ public class MainActivityJava extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            searchNote(query);
+        }
+    }
+
     private void filterNotes(ImportanceFilter filter) {
         Predicate<? super Note> predicate = null;
         switch (filter) {
@@ -121,6 +161,18 @@ public class MainActivityJava extends AppCompatActivity {
         }
         Objects.requireNonNull(predicate);
         List<Note> notes = this.notes.stream().filter(predicate).collect(Collectors.toList());
+        adapter.swap(notes);
+    }
+
+    private void searchNote(String query) {
+        if (query == null || query.isEmpty()) {
+            adapter.swap(notes);
+            return;
+        }
+        List<Note> notes = this.notes.stream().filter(n -> {
+            Pattern pattern = Pattern.compile(query, Pattern.CASE_INSENSITIVE);
+            return pattern.matcher(n.description).find();
+        }).collect(Collectors.toList());
         adapter.swap(notes);
     }
 }
