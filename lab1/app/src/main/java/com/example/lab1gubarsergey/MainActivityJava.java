@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -85,7 +87,7 @@ public class MainActivityJava extends AppCompatActivity {
                 startActivityForResult(AddNoteActivity.makeIntent(this), NEW_NOTE_REQUEST_CODE);
                 return true;
             case R.id.filter:
-                DialogUtil.showFilterDialog(this, this::filterNotes);
+                DialogUtil.showFilterDialog(this, this::filterImportance, this::filterDate);
         }
         return false;
     }
@@ -143,7 +145,7 @@ public class MainActivityJava extends AppCompatActivity {
         }
     }
 
-    private void filterNotes(ImportanceFilter filter) {
+    private void filterImportance(ImportanceFilter filter) {
         Predicate<? super Note> predicate = null;
         switch (filter) {
             case ALL:
@@ -160,6 +162,27 @@ public class MainActivityJava extends AppCompatActivity {
                 break;
         }
         Objects.requireNonNull(predicate);
+        filterNotes(predicate);
+    }
+
+    private void filterDate(Date date) {
+        Predicate<? super Note> predicate = (note) -> {
+
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+
+            Calendar noteCalendar = Calendar.getInstance();
+            noteCalendar.setTime(note.end);
+            return calendar.get(Calendar.DAY_OF_MONTH) == noteCalendar.get(Calendar.DAY_OF_MONTH)
+                    && calendar.get(Calendar.MONTH) == noteCalendar.get(Calendar.MONTH)
+                    && calendar.get(Calendar.YEAR) == noteCalendar.get(Calendar.YEAR);
+        };
+        Objects.requireNonNull(predicate);
+        filterNotes(predicate);
+    }
+
+    private void filterNotes(Predicate<? super Note> predicate) {
         List<Note> notes = this.notes.stream().filter(predicate).collect(Collectors.toList());
         adapter.swap(notes);
     }

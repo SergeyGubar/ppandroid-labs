@@ -37,4 +37,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/all" />
+
+    <Button
+        android:id="@+id/dialog_date_button"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/date" />
+
 </LinearLayout>
