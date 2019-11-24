@@ -3,10 +3,15 @@ package io.github.gubarsergey.pz3;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+
+    private static final String EXPRESSION_KEY = "EXPRESSION";
 
     private int[] buttons = new int[]{
             R.id.button_1,
@@ -28,7 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView expressionTextView;
     private TextView resultTextView;
-    private Calculator calculator;
+    private Calculator calculator = new Calculator();
+    private String expression = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +42,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         expressionTextView = findViewById(R.id.expression_text_view);
         resultTextView = findViewById(R.id.result_text_view);
-        calculator = new Calculator();
-        // TODO: restore state
+        restore(savedInstanceState);
         setupListeners();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(EXPRESSION_KEY, expression);
+    }
+
+    private void restore(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            String saved = savedInstanceState.getString(EXPRESSION_KEY);
+            calculate(saved);
+        }
     }
 
     private void setupListeners() {
@@ -92,10 +110,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.button_clear:
                 break;
             case R.id.button_equals:
-                resultTextView.setText(calculator.calculate(expressionTextView.getText().toString()));
+                calculate(expressionTextView.getText().toString());
                 break;
             default:
                 throw new IllegalArgumentException("Handling clicks on " + v.getId() + " is not allowed!");
         }
+    }
+
+    private void calculate(String expression) {
+        if (TextUtils.isEmpty(expression)) {
+            return;
+        }
+        this.expression = expression;
+        resultTextView.setText(calculator.calculate(expression));
+        expressionTextView.setText(expression);
     }
 }

@@ -1,29 +1,29 @@
 package io.github.gubarsergey.pz3;
+
 import java.util.List;
 import java.util.Stack;
 
 public class Calculator {
-    private RPN rpn;
+    private ReversePolishNotation reversePolishNotation;
 
     public Calculator() {
-        this.rpn = new RPN();
+        this.reversePolishNotation = new ReversePolishNotation();
     }
 
     public String calculate(String expression) {
-        List<String> rpnExpr = rpn.getRPN(this.correctExpression(expression));
+        List<String> rpnExpr = reversePolishNotation.getRPN(this.correctExpression(expression));
 
         Stack<Double> numbers = new Stack<>();
 
-        for(int i = 0; i < rpnExpr.size(); i++) {
+        for (int i = 0; i < rpnExpr.size(); i++) {
             String item = rpnExpr.get(i);
 
-            if(this.isNumeric(item)) {
+            if (this.isNumeric(item)) {
                 numbers.push(Double.parseDouble(item));
-            }
-            else {
+            } else {
                 Double currentNumber = numbers.pop();
                 Double previousNumber = 0.0;
-                if(!(numbers.isEmpty()))
+                if (!(numbers.isEmpty()))
                     previousNumber = numbers.pop();
                 Double result = 0.0;
 
@@ -55,13 +55,13 @@ public class Calculator {
 
         String bracketSequence = this.getBracketSubsequence(expression);
 
-        for(int i = 0; i < bracketSequence.length(); i++) {
+        for (int i = 0; i < bracketSequence.length(); i++) {
             char character = bracketSequence.charAt(i);
 
-            if(character == '(')
+            if (character == '(')
                 ommitedCloseBrackets.append(")");
             else {
-                if(ommitedCloseBrackets.length() > 0)
+                if (ommitedCloseBrackets.length() > 0)
                     ommitedCloseBrackets.deleteCharAt(ommitedCloseBrackets.length() - 1);
                 else
                     ommitedOpenBrackets.append("(");
@@ -79,24 +79,24 @@ public class Calculator {
         return correctedExpression;
     }
 
-    private  String getBracketSubsequence(String sequence) {
+    private String getBracketSubsequence(String sequence) {
         String bracketSequence = "";
 
-        for(int i = 0; i < sequence.length(); i++) {
+        for (int i = 0; i < sequence.length(); i++) {
             char character = sequence.charAt(i);
 
-            if(character == '(' || character == ')')
+            if (character == '(' || character == ')')
                 bracketSequence += character;
         }
 
-        return  bracketSequence;
+        return bracketSequence;
     }
 
     private Boolean isNumeric(char value) {
         try {
             Double.parseDouble(Character.toString(value));
             return true;
-        } catch(NumberFormatException e){
+        } catch (NumberFormatException e) {
             return false;
         }
     }
@@ -105,7 +105,7 @@ public class Calculator {
         try {
             Double.parseDouble(value);
             return true;
-        } catch(NumberFormatException e){
+        } catch (NumberFormatException e) {
             return false;
         }
     }
@@ -122,10 +122,10 @@ public class Calculator {
     private String setMultiplicationSign(String expression) {
         StringBuilder result = new StringBuilder();
 
-        for(int i = 0; i < expression.length() - 1; i++) {
+        for (int i = 0; i < expression.length() - 1; i++) {
             result.append(expression.charAt(i));
 
-            if(this.isMultiplicationSignRequired(expression.charAt(i), expression.charAt(i + 1)))
+            if (this.isMultiplicationSignRequired(expression.charAt(i), expression.charAt(i + 1)))
                 result.append('*');
         }
 

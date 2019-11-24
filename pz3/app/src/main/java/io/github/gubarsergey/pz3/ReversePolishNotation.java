@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class RPN {
+public class ReversePolishNotation {
     public List<String> getRPN(String expression) {
         List<String> rpnExpression = new ArrayList<>();
 
