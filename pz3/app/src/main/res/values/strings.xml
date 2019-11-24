@@ -14,5 +14,5 @@
     <string name="divide">/</string>
     <string name="multiply">*</string>
     <string name="equals">=</string>
-
+    <string name="clear">X</string>
 </resources>
