@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             R.id.button_multiply,
             R.id.button_divide,
             R.id.button_clear,
-            R.id.button_equals
+            R.id.button_equals,
+            R.id.button_zero
     };
 
     private TextView expressionTextView;
@@ -55,7 +56,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void restore(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             String saved = savedInstanceState.getString(EXPRESSION_KEY);
-            calculate(saved);
+            this.expression = saved;
+            calculate();
+            expressionTextView.setText(expression);
+
         }
     }
 
@@ -67,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId()) {
             case R.id.button_1:
                 expressionTextView.append("1");
@@ -96,33 +101,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 expressionTextView.append("9");
                 break;
             case R.id.button_plus:
-                expressionTextView.append("+");
+                appendSign("+");
                 break;
             case R.id.button_minus:
-                expressionTextView.append("-");
+                appendSign("-");
                 break;
             case R.id.button_multiply:
-                expressionTextView.append("*");
+                appendSign("*");
                 break;
             case R.id.button_divide:
-                expressionTextView.append("/");
+                appendSign("/");
+                break;
+            case R.id.button_zero:
+                expressionTextView.append("0");
                 break;
             case R.id.button_clear:
+                clearSymbol();
                 break;
             case R.id.button_equals:
-                calculate(expressionTextView.getText().toString());
+                calculate();
                 break;
+
             default:
                 throw new IllegalArgumentException("Handling clicks on " + v.getId() + " is not allowed!");
+
+        }
+        this.expression = expressionTextView.getText().toString();
+
+
+    }
+
+    private void clearSymbol() {
+        if (TextUtils.isEmpty(this.expression)) {
+            return;
+        }
+        this.expression = this.expression.substring(0, this.expression.length() - 1);
+        expressionTextView.setText(expression);
+    }
+
+    private void appendSign(String sign) {
+        if (this.expression.length() > 0 && !isLastCharacterSign()) {
+            expressionTextView.append(sign);
         }
     }
 
-    private void calculate(String expression) {
+    private void calculate() {
         if (TextUtils.isEmpty(expression)) {
             return;
         }
-        this.expression = expression;
-        resultTextView.setText(calculator.calculate(expression));
-        expressionTextView.setText(expression);
+        if (!isLastCharacterSign()) {
+            resultTextView.setText(calculator.calculate(expression));
+        }
+    }
+
+
+    private Boolean isLastCharacterSign() {
+
+        Boolean result = this.expression.length() > 0 && isSign(this.expression.charAt(this.expression.length() - 1));
+        Log.d("CALC", "isLasSign expr " + this.expression + " result " + result);
+        return result;
+    }
+
+    private Boolean isSign(Character c) {
+        return c == '+' || c == '-' || c == '/' || c == '*';
     }
 }

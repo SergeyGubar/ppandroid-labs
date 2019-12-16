@@ -9,10 +9,11 @@
     <string name="seven">7</string>
     <string name="eight">8</string>
     <string name="nine">9</string>
+    <string name="zero">0</string>
     <string name="plus">+</string>
     <string name="minus">-</string>
     <string name="divide">/</string>
     <string name="multiply">*</string>
     <string name="equals">=</string>
-    <string name="clear">X</string>
+    <string name="clear">C</string>
 </resources>

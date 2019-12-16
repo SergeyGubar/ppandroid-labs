@@ -161,6 +161,15 @@
             android:textSize="18sp" />
 
         <Button
+            android:id="@+id/button_zero"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/zero"
+            android:textSize="18sp" />
+
+        <Button
             android:id="@+id/button_equals"
             style="?android:attr/buttonBarStyle"
             android:layout_width="0dp"
@@ -224,5 +233,7 @@
             android:textSize="18sp"
             tools:text="" />
     </LinearLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
