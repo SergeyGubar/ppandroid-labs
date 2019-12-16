@@ -2,8 +2,10 @@ package com.example.lab1gubarsergey;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +20,10 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.lab1gubarsergey.db.Importance;
+import com.example.lab1gubarsergey.db.NotesDBHelper;
+import com.example.lab1gubarsergey.db.NotesMapper;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -40,6 +46,7 @@ public class AddNoteActivity extends AppCompatActivity {
     private Date date;
     private String image;
     private static final String TAG = AddNoteActivity.class.getSimpleName();
+    private NotesDBHelper dbHelper;
 
 
     @Override
@@ -53,6 +60,12 @@ public class AddNoteActivity extends AppCompatActivity {
         noteImage = findViewById(R.id.add_note_image);
         saveButton = findViewById(R.id.add_note_save_button);
         setupListeners();
+        dbHelper = new NotesDBHelper(
+                this,
+                NotesDBHelper.DB_NAME,
+                null,
+                NotesDBHelper.DATABASE_VERSION
+        );
     }
 
     private void setupListeners() {
@@ -119,7 +132,11 @@ public class AddNoteActivity extends AppCompatActivity {
         }
         Note note = new Note(nameEditText.getText().toString(), descriptionEditText.getText().toString(), importance, date, image);
         Log.d(TAG, "save: note = " + note);
-        FileUtils.appendNote(this, note);
+
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = NotesMapper.toCv(note);
+        db.insert(NotesDBHelper.TABLE_NAME, null, cv);
         setResult(AddNoteActivity.RESULT_OK);
         finish();
     }

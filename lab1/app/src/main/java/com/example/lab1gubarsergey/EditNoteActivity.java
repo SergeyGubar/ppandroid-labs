@@ -1,8 +1,5 @@
 package com.example.lab1gubarsergey;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -19,9 +16,13 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.lab1gubarsergey.db.Importance;
+
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Objects;
 
 public class EditNoteActivity extends AppCompatActivity {

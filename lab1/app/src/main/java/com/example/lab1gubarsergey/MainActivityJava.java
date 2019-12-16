@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,6 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.lab1gubarsergey.db.Importance;
+import com.example.lab1gubarsergey.db.NotesDBHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,6 +41,7 @@ public class MainActivityJava extends AppCompatActivity {
     private NotesAdapter adapter;
     private RecyclerView recycler;
     private List<Note> notes = new ArrayList<>();
+    private NotesDBHelper dbHelper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,6 +52,13 @@ public class MainActivityJava extends AppCompatActivity {
         recycler = findViewById(R.id.notes_recycler);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        dbHelper = new NotesDBHelper(
+                this,
+                NotesDBHelper.DB_NAME,
+                null,
+                NotesDBHelper.DATABASE_VERSION
+        );
+
 
         loadDataFromFile();
         handleIntent(getIntent());
@@ -101,7 +113,8 @@ public class MainActivityJava extends AppCompatActivity {
     }
 
     private void loadDataFromFile() {
-        List<Note> content = FileUtils.readNotes(this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<Note> content = dbHelper.readNotes(db);
         Log.d(TAG, "loadDataFromFile: data " + content);
         if (content != null) {
             this.notes = content;

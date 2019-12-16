@@ -3,6 +3,8 @@ package com.example.lab1gubarsergey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.example.lab1gubarsergey.db.Importance;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
@@ -11,12 +13,12 @@ import java.util.UUID;
 
 public class Note implements Parcelable {
 
-    String name;
-    String description;
-    Importance importance;
-    Date end;
-    String image;
-    String guid = UUID.randomUUID().toString();
+    public String name;
+    public String description;
+    public Importance importance;
+    public Date end;
+    public String image;
+    public String guid;
 
     public Note(String name, String description, Importance importance, Date end, String image) {
         this.name = name;
@@ -24,6 +26,17 @@ public class Note implements Parcelable {
         this.importance = importance;
         this.end = end;
         this.image = image;
+        this.guid = UUID.randomUUID().toString();
+    }
+
+    public Note(String name, String description, Importance importance, Date end, String image, String guid) {
+        this.name = name;
+        this.description = description;
+        this.importance = importance;
+        this.end = end;
+        this.image = image;
+        this.guid = guid;
+
     }
 
     protected Note(Parcel in) {
@@ -80,10 +93,4 @@ public class Note implements Parcelable {
     public int hashCode() {
         return Objects.hash(name, description, importance, end);
     }
-}
-
-enum Importance {
-    LOW,
-    MEDIUM,
-    HIGH
 }
