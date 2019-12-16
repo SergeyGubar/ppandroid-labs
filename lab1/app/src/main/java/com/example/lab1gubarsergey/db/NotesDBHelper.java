@@ -1,5 +1,6 @@
 package com.example.lab1gubarsergey.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -55,41 +56,63 @@ public class NotesDBHelper extends SQLiteOpenHelper {
                 null, null, null, null, null)) {
 
             while (cursor.moveToNext()) {
-
-                Importance importance;
-                int storedImportance = cursor.getInt(cursor.getColumnIndex(NotesDBHelper.COLUMN_IMPORTANCE));
-
-                switch (storedImportance) {
-                    case 1:
-                        importance = Importance.LOW;
-                        break;
-                    case 2:
-                        importance = Importance.MEDIUM;
-                        break;
-                    case 3:
-                        importance = Importance.HIGH;
-                        break;
-                    default:
-                        throw new IllegalStateException("Importance is lost :(");
-                }
-
-                Date date;
-                long storedTime = cursor.getLong(cursor.getColumnIndex(NotesDBHelper.COLUMN_DATE));
-                Calendar calendar = new GregorianCalendar();
-                calendar.setTimeInMillis(storedTime);
-                date = calendar.getTime();
-
-                Note note = new Note(
-                        cursor.getString(cursor.getColumnIndex(NotesDBHelper.COLUMN_NAME)),
-                        cursor.getString(cursor.getColumnIndex(NotesDBHelper.COLUMN_DESCRIPTION)),
-                        importance,
-                        date,
-                        cursor.getString(cursor.getColumnIndex(NotesDBHelper.COLUMN_IMAGE))
-                );
+                Note note = getNote(cursor);
                 notes.add(note);
             }
         }
         return notes;
+    }
+
+    public void removeNote(Note note, SQLiteDatabase db) {
+        db.delete(TABLE_NAME, COLUMN_ID + " = ?", new String[]{note.guid});
+    }
+
+    public void updateNote(Note note, SQLiteDatabase db) {
+        ContentValues cv = NotesMapper.toCv(note);
+        db.update(TABLE_NAME, cv, COLUMN_ID + " = ?", new String[]{note.guid});
+    }
+
+    public Note getNote(String id, SQLiteDatabase db) {
+        Cursor cursor = db.query(TABLE_NAME, null, COLUMN_ID + " = ?", new String[]{id}, null, null, null);
+        if (cursor.getCount() != 1) throw new IllegalStateException();
+        cursor.moveToFirst();
+        return getNote(cursor);
+    }
+
+    private Note getNote(Cursor cursor) {
+        Importance importance;
+        int storedImportance = cursor.getInt(cursor.getColumnIndex(NotesDBHelper.COLUMN_IMPORTANCE));
+
+        switch (storedImportance) {
+            case 1:
+                importance = Importance.LOW;
+                break;
+            case 2:
+                importance = Importance.MEDIUM;
+                break;
+            case 3:
+                importance = Importance.HIGH;
+                break;
+            default:
+                throw new IllegalStateException("Importance is lost :(");
+        }
+
+        Date date;
+        long storedTime = cursor.getLong(cursor.getColumnIndex(NotesDBHelper.COLUMN_DATE));
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(storedTime);
+        date = calendar.getTime();
+
+        Note note = new Note(
+                cursor.getString(cursor.getColumnIndex(NotesDBHelper.COLUMN_NAME)),
+                cursor.getString(cursor.getColumnIndex(NotesDBHelper.COLUMN_DESCRIPTION)),
+                importance,
+                date,
+                cursor.getString(cursor.getColumnIndex(NotesDBHelper.COLUMN_IMAGE)),
+                cursor.getString(cursor.getColumnIndex(NotesDBHelper.COLUMN_ID))
+
+        );
+        return note;
     }
 
     @Override

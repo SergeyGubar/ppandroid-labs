@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lab1gubarsergey.db.Importance;
+import com.example.lab1gubarsergey.db.NotesDBHelper;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -42,6 +43,8 @@ public class EditNoteActivity extends AppCompatActivity {
     private Button dateButton;
     private Button saveButton;
     private ImageView noteImage;
+    private NotesDBHelper dbHelper;
+
 
     private Note note;
 
@@ -49,11 +52,18 @@ public class EditNoteActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_note);
-        note = FileUtils.findNote(this, getIntent().getStringExtra(NOTE_KEY));
+        dbHelper = new NotesDBHelper(
+                this,
+                NotesDBHelper.DB_NAME,
+                null,
+                NotesDBHelper.DATABASE_VERSION
+        );
+        note = dbHelper.getNote(getIntent().getStringExtra(NOTE_KEY), dbHelper.getReadableDatabase());
         Objects.requireNonNull(note);
         findViews();
         initUI();
         setupListeners();
+
     }
 
     private void setupListeners() {
@@ -122,7 +132,7 @@ public class EditNoteActivity extends AppCompatActivity {
                 throw new IllegalStateException("Radiobutton is not checked!");
         }
         this.note.importance = importance;
-        FileUtils.updateNote(this, note);
+        dbHelper.updateNote(this.note, dbHelper.getWritableDatabase());
         setResult(Activity.RESULT_OK);
         finish();
     }

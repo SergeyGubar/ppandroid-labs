@@ -131,7 +131,8 @@ public class MainActivityJava extends AppCompatActivity {
                 int index = notes.indexOf(note);
                 if (index != -1) {
                     notes.remove(index);
-                    FileUtils.writeNotes(MainActivityJava.this, notes);
+                    SQLiteDatabase db = dbHelper.getWritableDatabase();
+                    dbHelper.removeNote(note, db);
                     adapter.removeItem(index);
                 } else {
                     Log.e(TAG, "deleteClicked: remove failed no such element");
