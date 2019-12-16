@@ -5,6 +5,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -60,7 +61,7 @@ public class MainActivityJava extends AppCompatActivity {
         );
 
 
-        loadDataFromFile();
+        loadDataFromDB();
         handleIntent(getIntent());
     }
 
@@ -108,20 +109,13 @@ public class MainActivityJava extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if ((requestCode == NEW_NOTE_REQUEST_CODE || requestCode == EDIT_NOTE_REQUEST_CODE) && resultCode == Activity.RESULT_OK) {
-            loadDataFromFile();
+            loadDataFromDB();
         }
     }
 
-    private void loadDataFromFile() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        List<Note> content = dbHelper.readNotes(db);
-        Log.d(TAG, "loadDataFromFile: data " + content);
-        if (content != null) {
-            this.notes = content;
-            adapter.swap(notes);
-        } else {
-            Toast.makeText(this, R.string.notes_are_empty, Toast.LENGTH_SHORT).show();
-        }
+    private void loadDataFromDB() {
+        LoadNotesTask task = new LoadNotesTask();
+        task.execute();
     }
 
     private void onNoteClicked(Note note) {
@@ -212,4 +206,32 @@ public class MainActivityJava extends AppCompatActivity {
         }).collect(Collectors.toList());
         adapter.swap(notes);
     }
+
+    class LoadNotesTask extends AsyncTask<Void, Void, List<Note>> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Toast.makeText(MainActivityJava.this, "Loading data..", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected List<Note> doInBackground(Void... params) {
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            List<Note> content = dbHelper.readNotes(db);
+            Log.d(TAG, "loadDataFromDB: data " + content);
+            return content;
+        }
+
+        @Override
+        protected void onPostExecute(List<Note> result) {
+            super.onPostExecute(result);
+            if (result != null) {
+                MainActivityJava.this.notes = result;
+                adapter.swap(notes);
+            } else {
+                Toast.makeText(MainActivityJava.this, R.string.notes_are_empty, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
+

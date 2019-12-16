@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class NotesDBHelper extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DB_NAME = "NOTES_DB";
 
 
@@ -117,8 +118,11 @@ public class NotesDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion == 1) {
-            // TODO
+        if (oldVersion == 1 && newVersion == 2) {
+            db.execSQL("CREATE INDEX comp_index on " + TABLE_NAME + " (" + COLUMN_DESCRIPTION + ");");
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN new_column INTEGER DEFAULT 0");
+            Log.d("DB", "Migrated databse");
+
         }
     }
 }
