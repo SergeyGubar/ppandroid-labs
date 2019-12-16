@@ -191,8 +191,8 @@ public class MainActivityJava extends AppCompatActivity {
     }
 
     private void filterNotes(Predicate<? super Note> predicate) {
-        List<Note> notes = this.notes.stream().filter(predicate).collect(Collectors.toList());
-        adapter.swap(notes);
+        FilterNotesTask task = new FilterNotesTask();
+        task.execute(predicate);
     }
 
     private void searchNote(String query) {
@@ -228,6 +228,26 @@ public class MainActivityJava extends AppCompatActivity {
             if (result != null) {
                 MainActivityJava.this.notes = result;
                 adapter.swap(notes);
+            } else {
+                Toast.makeText(MainActivityJava.this, R.string.notes_are_empty, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    class FilterNotesTask extends AsyncTask<Predicate<? super Note>, Void, List<Note>> {
+
+        @SafeVarargs
+        @Override
+        protected final List<Note> doInBackground(Predicate<? super Note>... predicates) {
+            List<Note> notes = MainActivityJava.this.notes.stream().filter(predicates[0]).collect(Collectors.toList());
+            return notes;
+        }
+
+        @Override
+        protected void onPostExecute(List<Note> result) {
+            super.onPostExecute(result);
+            if (result != null) {
+                adapter.swap(result);
             } else {
                 Toast.makeText(MainActivityJava.this, R.string.notes_are_empty, Toast.LENGTH_SHORT).show();
             }
