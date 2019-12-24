@@ -10,12 +10,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+@FunctionalInterface
+interface ItemClickListener<T> {
+    void onClick(T item);
+}
+
 public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TrackViewHolder> {
 
     private List<Track> tracks;
+    private ItemClickListener<Track> itemClickListener;
 
-    public TracksAdapter(List<Track> tracks) {
+    public TracksAdapter(List<Track> tracks, ItemClickListener<Track> itemClickListener) {
         this.tracks = tracks;
+        this.itemClickListener = itemClickListener;
     }
 
     @NonNull
@@ -47,7 +54,13 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TrackViewH
             trackBandNameTextView = itemView.findViewById(R.id.item_track_band_name);
         }
 
-        void bind(Track track) {
+        void bind(final Track track) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    itemClickListener.onClick(track);
+                }
+            });
             trackNameTextView.setText(track.name);
             trackBandNameTextView.setText(track.author);
             trackDurationTextView.setText(Integer.toString(track.totalTime));

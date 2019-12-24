@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Lab</string>
     <string name="stop">Stop</string>
+    <string name="start">Start</string>
+    <string name="more"><![CDATA[>]]></string>
+    <string name="less"><![CDATA[<]]></string>
 </resources>

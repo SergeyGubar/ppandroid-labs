@@ -21,14 +21,97 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         AudioManager.OnAudioFocusChangeListener {
 
     private MediaPlayer mediaPlayer;
-    private String mediaFile;
     private AudioManager audioManager;
     private int resumePosition;
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    private static final String TAG = "AudioService";
+
+    private static final String ACTION_PLAY = "ACTION_PLAY";
+    private static final String ACTION_PLAY_EXTRA = "ACTION_PLAY_EXTRA";
+
+    private static final String ACTION_PAUSE = "ACTION_PAUSE";
+    private static final String ACTION_RESUME = "ACTION_RESUME";
+
+    private static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
+    private static final String ACTION_NEXT = "ACTION_NEXT";
+
+    private static final String CHANNEL_ID = "ForegroundServiceChannel";
+
+    public static Intent makePlayTrackIntent(Context context, String track) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_PLAY);
+        intent.putExtra(ACTION_PLAY_EXTRA, track);
+        return intent;
     }
+
+    public static Intent makePauseIntent(Context context) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_PAUSE);
+        return intent;
+    }
+
+    public static Intent makeResumeIntent(Context context) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_RESUME);
+        return intent;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        createNotificationChannel();
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, notificationIntent, 0);
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Foreground Service")
+                .setContentText("Text")
+                .setContentIntent(pendingIntent)
+                .build();
+        startForeground(1, notification);
+        initMediaPlayer();
+    }
+
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        Log.d(TAG, "onStartCommand");
+
+        Log.d(TAG, "Handle intent");
+        if (intent == null) {
+            Log.e(TAG, "Error: Intent null");
+            return START_NOT_STICKY;
+        }
+
+        String action = intent.getAction();
+        if (action == null) {
+            Log.e(TAG, "Error: action null");
+            return START_NOT_STICKY;
+
+        }
+        switch (action) {
+            case ACTION_NEXT:
+                break;
+            case ACTION_PAUSE:
+                pauseMedia();
+                break;
+            case ACTION_RESUME:
+                resumeMedia();
+                break;
+            case ACTION_PLAY:
+                String track = intent.getStringExtra(ACTION_PLAY_EXTRA);
+                playMedia(track);
+                break;
+            case ACTION_PREVIOUS:
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + action);
+        }
+
+        return START_NOT_STICKY;
+    }
+
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
@@ -59,16 +142,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         return false;
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mediaPlayer != null) {
-            stopMedia();
-            mediaPlayer.release();
-        }
-        removeAudioFocus();
-    }
-
     private boolean requestAudioFocus() {
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         int result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
@@ -94,7 +167,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        playMedia();
+//        playMedia();
     }
 
     @Override
@@ -107,10 +180,18 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         //Invoked when the audio focus of the system is updated.
     }
 
-    private void playMedia() {
-        if (!mediaPlayer.isPlaying()) {
-            mediaPlayer.start();
+    private void playMedia(String filePath) {
+        Log.d(TAG, "playMedia " + filePath);
+        try {
+            mediaPlayer.setDataSource(filePath);
+            if (!mediaPlayer.isPlaying()) {
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+
     }
 
     private void stopMedia() {
@@ -133,29 +214,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.start();
         }
     }
-
-    public static final String CHANNEL_ID = "ForegroundServiceChannel";
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        String input = intent.getStringExtra("inputExtra");
-        createNotificationChannel();
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, 0);
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Foreground Service")
-                .setContentText(input)
-                .setContentIntent(pendingIntent)
-                .build();
-        startForeground(1, notification);
-        //do heavy work on a background thread
-        //stopSelf();
-        initMediaPlayer();
-
-        return START_NOT_STICKY;
-    }
-
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -180,7 +238,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         mediaPlayer.setOnSeekCompleteListener(this);
         mediaPlayer.setOnInfoListener(this);
         //Reset so that the MediaPlayer is not pointing to another data source
-        mediaPlayer.reset();
+//        mediaPlayer.reset();
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 //        try {
@@ -191,6 +249,22 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 //            stopSelf();
 //        }
 //        mediaPlayer.prepareAsync();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+        if (mediaPlayer != null) {
+            stopMedia();
+            mediaPlayer.release();
+        }
+        removeAudioFocus();
     }
 
 }
