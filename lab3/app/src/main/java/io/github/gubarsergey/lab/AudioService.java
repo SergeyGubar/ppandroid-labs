@@ -132,6 +132,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onCreate() {
         super.onCreate();
+        requestAudioFocus();
         Notification notification = createNotification("Start", "Start", true);
         startForeground(notificationId, notification);
         initMediaPlayer();
@@ -505,7 +506,36 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public void onAudioFocusChange(int focusChange) {
-        //Invoked when the audio focus of the system is updated.
+        Log.d(TAG, "onAudioFocusChange");
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                Log.d(TAG, "gain audiofocus");
+                if (!mediaPlayer.isPlaying()) {
+                    mediaPlayer.start();
+                }
+                mediaPlayer.setVolume(1.0f, 1.0f);
+                timer.resume();
+                sendSongStatusIntent(true);
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS:
+                Log.d(TAG, "loss audiofocus");
+                if (mediaPlayer.isPlaying()) mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
+                break;
+
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                Log.d(TAG, "loss transient audiofocus");
+                if (mediaPlayer.isPlaying()) mediaPlayer.pause();
+                timer.cancel();
+                sendSongStatusIntent(false);
+                break;
+
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                Log.d(TAG, "loss audiofocus can duck");
+                if (mediaPlayer.isPlaying()) mediaPlayer.setVolume(0.1f, 0.1f);
+                break;
+        }
     }
 
     @Override
