@@ -12,7 +12,7 @@ import java.util.List;
 
 @FunctionalInterface
 interface ItemClickListener<T> {
-    void onClick(T item);
+    void onClick(T item, int position);
 }
 
 public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TrackViewHolder> {
@@ -55,12 +55,7 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TrackViewH
         }
 
         void bind(final Track track) {
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    itemClickListener.onClick(track);
-                }
-            });
+            itemView.setOnClickListener(view -> itemClickListener.onClick(track, getAdapterPosition()));
             trackNameTextView.setText(track.name);
             trackBandNameTextView.setText(track.author);
             trackDurationTextView.setText(Integer.toString(track.totalTime));

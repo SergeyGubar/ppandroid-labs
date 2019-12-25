@@ -11,9 +11,12 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+
+import java.util.Arrays;
 
 public class AudioService extends Service implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
@@ -22,9 +25,15 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private MediaPlayer mediaPlayer;
     private AudioManager audioManager;
+    private Countdown timer;
     private int resumePosition;
+    private int playbackPosition = 0;
 
+    private Track[] tracks;
     private static final String TAG = "AudioService";
+
+    private static final String ACTION_INIT_TRACKS = "ACTION_INIT_TRACKS";
+    private static final String ACTION_INIT_TRACKS_EXTRA = "ACTION_INIT_TRACKS";
 
     private static final String ACTION_PLAY = "ACTION_PLAY";
     private static final String ACTION_PLAY_EXTRA = "ACTION_PLAY_EXTRA";
@@ -32,15 +41,25 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     private static final String ACTION_PAUSE = "ACTION_PAUSE";
     private static final String ACTION_RESUME = "ACTION_RESUME";
 
-    private static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
     private static final String ACTION_NEXT = "ACTION_NEXT";
+    private static final String ACTION_PREVIOUS = "ACTION_PREVIOUS";
+
+    private static final String ACTION_PROGRESS_CHANGED = "ACTION_PROGRESS_CHANGED";
+    private static final String ACTION_PROGRESS_CHANGED_EXTRA = "ACTION_PROGRESS_CHANGED_EXTRA";
 
     private static final String CHANNEL_ID = "ForegroundServiceChannel";
 
-    public static Intent makePlayTrackIntent(Context context, String track) {
+    public static Intent makePlayTrackIntent(Context context, int trackPosition) {
         Intent intent = new Intent(context, AudioService.class);
         intent.setAction(ACTION_PLAY);
-        intent.putExtra(ACTION_PLAY_EXTRA, track);
+        intent.putExtra(ACTION_PLAY_EXTRA, trackPosition);
+        return intent;
+    }
+
+    public static Intent makeInitTracksIntent(Context context, Parcelable[] tracks) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_INIT_TRACKS);
+        intent.putExtra(ACTION_INIT_TRACKS_EXTRA, tracks);
         return intent;
     }
 
@@ -56,10 +75,30 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         return intent;
     }
 
+    public static Intent makeNextIntent(Context context) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_NEXT);
+        return intent;
+    }
+
+    public static Intent makePreviousIntent(Context context) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_PREVIOUS);
+        return intent;
+    }
+
+    public static Intent makeProgressChangedIntent(Context context, int progress) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_PROGRESS_CHANGED);
+        intent.putExtra(ACTION_PROGRESS_CHANGED_EXTRA, progress);
+        return intent;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
+
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
@@ -79,19 +118,21 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         Log.d(TAG, "onStartCommand");
 
         Log.d(TAG, "Handle intent");
-        if (intent == null) {
-            Log.e(TAG, "Error: Intent null");
+        if (intent == null || intent.getAction() == null) {
+            Log.e(TAG, "Error: Intent or action null");
             return START_NOT_STICKY;
         }
-
-        String action = intent.getAction();
-        if (action == null) {
-            Log.e(TAG, "Error: action null");
-            return START_NOT_STICKY;
-
-        }
-        switch (action) {
+        switch (intent.getAction()) {
+            case ACTION_INIT_TRACKS:
+                Parcelable[] tracksFromIntent = intent.getParcelableArrayExtra(ACTION_INIT_TRACKS_EXTRA);
+                Track[] tracks = new Track[tracksFromIntent.length];
+                for (int i = 0; i < tracksFromIntent.length; i++) {
+                    tracks[i] = (Track) tracksFromIntent[i];
+                }
+                loadTracks(tracks);
+                break;
             case ACTION_NEXT:
+                playNextTrack();
                 break;
             case ACTION_PAUSE:
                 pauseMedia();
@@ -100,16 +141,144 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
                 resumeMedia();
                 break;
             case ACTION_PLAY:
-                String track = intent.getStringExtra(ACTION_PLAY_EXTRA);
-                playMedia(track);
+                int position = intent.getIntExtra(ACTION_PLAY_EXTRA, 0);
+                playMedia(position);
                 break;
             case ACTION_PREVIOUS:
+                playPreviousTrack();
+                break;
+            case ACTION_PROGRESS_CHANGED:
+                int progress = intent.getIntExtra(ACTION_PROGRESS_CHANGED_EXTRA, 0);
+                updateProgress(progress);
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + action);
+                throw new IllegalStateException("Unexpected value: " + intent.getAction());
         }
 
         return START_NOT_STICKY;
+    }
+
+    private void loadTracks(Track[] tracks) {
+        Log.d(TAG, "Load tracks " + Arrays.toString(tracks));
+        this.tracks = tracks;
+    }
+
+    private void updateProgress(int progress) {
+        Log.d(TAG, "updateProgress " + progress);
+        mediaPlayer.seekTo(progress);
+        timer.updateProgress(progress);
+    }
+
+    private void playNextTrack() {
+        int newPlayback;
+        if (this.playbackPosition + 1 > this.tracks.length - 1) {
+            newPlayback = 0;
+        } else {
+            newPlayback = playbackPosition + 1;
+        }
+        playMedia(newPlayback);
+    }
+
+    private void playPreviousTrack() {
+        int newPlayback;
+        if (this.playbackPosition - 1 < 0) {
+            newPlayback = tracks.length - 1;
+        } else {
+            newPlayback = playbackPosition - 1;
+        }
+        playMedia(newPlayback);
+    }
+
+    private void playMedia(int position) {
+        try {
+            Track track = tracks[position];
+
+            mediaPlayer.reset();
+            mediaPlayer.setDataSource(track.filepath);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            this.playbackPosition = position;
+
+            Intent trackIntent = new Intent();
+            trackIntent.setAction(MainActivity.ACTION_SONG_UPDATED);
+            trackIntent.putExtra(MainActivity.ACTION_SONG_UPDATED_EXTRA, track);
+            sendBroadcast(trackIntent);
+
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
+
+            timer = new Countdown(track.totalTime, 1000, elapsed -> {
+                Intent timeUpdateIntent = new Intent();
+                timeUpdateIntent.setAction(MainActivity.ACTION_SONG_TIME_UPDATED);
+                timeUpdateIntent.putExtra(MainActivity.ACTION_SONG_TIME_UPDATED_EXTRA, elapsed);
+                sendBroadcast(timeUpdateIntent);
+            }).start();
+
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void stopMedia() {
+        if (mediaPlayer == null) return;
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+        }
+    }
+
+    private void pauseMedia() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            resumePosition = mediaPlayer.getCurrentPosition();
+            timer.cancel();
+        }
+    }
+
+    private void resumeMedia() {
+        if (!mediaPlayer.isPlaying()) {
+            mediaPlayer.seekTo(resumePosition);
+            mediaPlayer.start();
+            timer.resume();
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Foreground Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
+
+
+    private void initMediaPlayer() {
+        mediaPlayer = new MediaPlayer();
+        //Set up MediaPlayer event listeners
+        mediaPlayer.setOnCompletionListener(this);
+        mediaPlayer.setOnErrorListener(this);
+        mediaPlayer.setOnPreparedListener(this);
+        mediaPlayer.setOnBufferingUpdateListener(this);
+        mediaPlayer.setOnSeekCompleteListener(this);
+        mediaPlayer.setOnInfoListener(this);
+        //Reset so that the MediaPlayer is not pointing to another data source
+//        mediaPlayer.reset();
+
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//        try {
+//            // Set the data source to the mediaFile location
+//            mediaPlayer.setDataSource(mediaFile);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            stopSelf();
+//        }
+//        mediaPlayer.prepareAsync();
     }
 
 
@@ -178,77 +347,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onAudioFocusChange(int focusChange) {
         //Invoked when the audio focus of the system is updated.
-    }
-
-    private void playMedia(String filePath) {
-        Log.d(TAG, "playMedia " + filePath);
-        try {
-            mediaPlayer.setDataSource(filePath);
-            if (!mediaPlayer.isPlaying()) {
-                mediaPlayer.prepare();
-                mediaPlayer.start();
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-    }
-
-    private void stopMedia() {
-        if (mediaPlayer == null) return;
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-        }
-    }
-
-    private void pauseMedia() {
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            resumePosition = mediaPlayer.getCurrentPosition();
-        }
-    }
-
-    private void resumeMedia() {
-        if (!mediaPlayer.isPlaying()) {
-            mediaPlayer.seekTo(resumePosition);
-            mediaPlayer.start();
-        }
-    }
-
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Foreground Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
-        }
-    }
-
-
-    private void initMediaPlayer() {
-        mediaPlayer = new MediaPlayer();
-        //Set up MediaPlayer event listeners
-        mediaPlayer.setOnCompletionListener(this);
-        mediaPlayer.setOnErrorListener(this);
-        mediaPlayer.setOnPreparedListener(this);
-        mediaPlayer.setOnBufferingUpdateListener(this);
-        mediaPlayer.setOnSeekCompleteListener(this);
-        mediaPlayer.setOnInfoListener(this);
-        //Reset so that the MediaPlayer is not pointing to another data source
-//        mediaPlayer.reset();
-
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//        try {
-//            // Set the data source to the mediaFile location
-//            mediaPlayer.setDataSource(mediaFile);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            stopSelf();
-//        }
-//        mediaPlayer.prepareAsync();
     }
 
     @Override

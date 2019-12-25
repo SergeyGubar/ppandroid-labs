@@ -2,9 +2,11 @@ package io.github.gubarsergey.lab;
 
 
 import android.media.MediaMetadataRetriever;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
-public class Track {
+public class Track implements Parcelable {
     public String name;
     public String filepath;
     public String author;
@@ -39,4 +41,37 @@ public class Track {
         return "Track \"" + this.name + "\", by " + this.author
                 + "\n\tDuration: " + this.totalTime / 1000 + "ms.";
     }
+
+    protected Track(Parcel in) {
+        name = in.readString();
+        filepath = in.readString();
+        author = in.readString();
+        totalTime = in.readInt();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeString(filepath);
+        dest.writeString(author);
+        dest.writeInt(totalTime);
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Track> CREATOR = new Parcelable.Creator<Track>() {
+        @Override
+        public Track createFromParcel(Parcel in) {
+            return new Track(in);
+        }
+
+        @Override
+        public Track[] newArray(int size) {
+            return new Track[size];
+        }
+    };
 }
