@@ -15,8 +15,10 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import java.util.Arrays;
+import java.util.Random;
 
 public class AudioService extends Service implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
@@ -27,7 +29,11 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     private AudioManager audioManager;
     private Countdown timer;
     private int resumePosition;
-    private int playbackPosition = 0;
+    private int playbackPosition = -1;
+
+    private boolean isShuffleMode = false;
+    private boolean isRepeatMode = false;
+    private int notificationId = 14;
 
     private Track[] tracks;
     private static final String TAG = "AudioService";
@@ -46,6 +52,14 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private static final String ACTION_PROGRESS_CHANGED = "ACTION_PROGRESS_CHANGED";
     private static final String ACTION_PROGRESS_CHANGED_EXTRA = "ACTION_PROGRESS_CHANGED_EXTRA";
+
+    private static final String ACTION_SHUFFLE_CHANGED = "ACTION_SHUFFLE_CHANGED";
+    private static final String ACTION_SHUFFLE_CHANGED_EXTRA = "ACTION_SHUFFLE_CHANGED_EXTRA";
+
+    private static final String ACTION_REPEAT_CHANGED = "ACTION_REPEAT_CHANGED";
+    private static final String ACTION_REPEAT_CHANGED_EXTRA = "ACTION_REPEAT_CHANGED_EXTRA";
+
+    private static final String DIE_MODE = "DIE_MODE";
 
     private static final String CHANNEL_ID = "ForegroundServiceChannel";
 
@@ -94,20 +108,32 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         return intent;
     }
 
+    public static Intent makeShuffleChangedIntent(Context context, boolean isShuffleMode) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_SHUFFLE_CHANGED);
+        intent.putExtra(ACTION_SHUFFLE_CHANGED_EXTRA, isShuffleMode);
+        return intent;
+    }
+
+    public static Intent makeRepeatChangedIntent(Context context, boolean isRepeatMode) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_REPEAT_CHANGED);
+        intent.putExtra(ACTION_REPEAT_CHANGED_EXTRA, isRepeatMode);
+        return intent;
+    }
+
+    public static Intent makeDieIntent(Context context) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(DIE_MODE);
+        return intent;
+    }
+
+
     @Override
     public void onCreate() {
         super.onCreate();
-        createNotificationChannel();
-
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, 0);
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Foreground Service")
-                .setContentText("Text")
-                .setContentIntent(pendingIntent)
-                .build();
-        startForeground(1, notification);
+        Notification notification = createNotification("Start", "Start", true);
+        startForeground(notificationId, notification);
         initMediaPlayer();
     }
 
@@ -134,6 +160,14 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             case ACTION_NEXT:
                 playNextTrack();
                 break;
+            case ACTION_REPEAT_CHANGED:
+                boolean isRepeat = intent.getBooleanExtra(ACTION_REPEAT_CHANGED_EXTRA, false);
+                this.isRepeatMode = isRepeat;
+                break;
+            case ACTION_SHUFFLE_CHANGED:
+                boolean isShuffle = intent.getBooleanExtra(ACTION_SHUFFLE_CHANGED_EXTRA, false);
+                this.isShuffleMode = isShuffle;
+                break;
             case ACTION_PAUSE:
                 pauseMedia();
                 break;
@@ -150,6 +184,10 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             case ACTION_PROGRESS_CHANGED:
                 int progress = intent.getIntExtra(ACTION_PROGRESS_CHANGED_EXTRA, 0);
                 updateProgress(progress);
+                break;
+            case DIE_MODE:
+                stopForeground(true);
+                stopSelf();
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + intent.getAction());
@@ -170,7 +208,20 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     }
 
     private void playNextTrack() {
+        Log.d(TAG, "playNextTrack isShuffle " + isShuffleMode + " isRepeat " + isRepeatMode);
         int newPlayback;
+
+        if (isShuffleMode) {
+            newPlayback = new Random().nextInt(tracks.length);
+            playMedia(newPlayback);
+            return;
+        }
+
+        if (isRepeatMode) {
+            playMedia(playbackPosition);
+            return;
+        }
+
         if (this.playbackPosition + 1 > this.tracks.length - 1) {
             newPlayback = 0;
         } else {
@@ -181,12 +232,25 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private void playPreviousTrack() {
         int newPlayback;
+
+        if (isShuffleMode) {
+            newPlayback = new Random().nextInt(tracks.length);
+            playMedia(newPlayback);
+            return;
+        }
+
+        if (isRepeatMode) {
+            playMedia(playbackPosition);
+            return;
+        }
+
         if (this.playbackPosition - 1 < 0) {
             newPlayback = tracks.length - 1;
         } else {
             newPlayback = playbackPosition - 1;
         }
         playMedia(newPlayback);
+
     }
 
     private void playMedia(int position) {
@@ -204,6 +268,11 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             trackIntent.putExtra(MainActivity.ACTION_SONG_UPDATED_EXTRA, track);
             sendBroadcast(trackIntent);
 
+            Intent songStatusUpdateIntent = new Intent();
+            songStatusUpdateIntent.setAction(MainActivity.ACTION_SONG_STATUS_UPDATED);
+            songStatusUpdateIntent.putExtra(MainActivity.ACTION_SONG_TIME_UPDATED_EXTRA, true);
+            sendBroadcast(songStatusUpdateIntent);
+
             if (timer != null) {
                 timer.cancel();
                 timer = null;
@@ -215,8 +284,8 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
                 timeUpdateIntent.putExtra(MainActivity.ACTION_SONG_TIME_UPDATED_EXTRA, elapsed);
                 sendBroadcast(timeUpdateIntent);
             }).start();
-
-
+            updateNotification(track.name, track.author, false);
+            sendSongStatusIntent(true);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -234,6 +303,9 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.pause();
             resumePosition = mediaPlayer.getCurrentPosition();
             timer.cancel();
+            Track track = tracks[playbackPosition];
+            updateNotification(track.name, track.author, true);
+            sendSongStatusIntent(false);
         }
     }
 
@@ -242,6 +314,9 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.seekTo(resumePosition);
             mediaPlayer.start();
             timer.resume();
+            Track track = tracks[playbackPosition];
+            updateNotification(track.name, track.author, false);
+            sendSongStatusIntent(true);
         }
     }
 
@@ -252,11 +327,25 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
                     "Foreground Service Channel",
                     NotificationManager.IMPORTANCE_DEFAULT
             );
+            serviceChannel.setDescription("description");
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);
         }
     }
 
+    private void updateNotification(String title, String text, boolean play) {
+        Notification notification = createNotification(title, text, play);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(notificationId, notification);
+    }
+
+
+    private void sendSongStatusIntent(boolean isPlaying) {
+        Intent songStatusUpdateIntent = new Intent();
+        songStatusUpdateIntent.setAction(MainActivity.ACTION_SONG_STATUS_UPDATED);
+        songStatusUpdateIntent.putExtra(MainActivity.ACTION_SONG_STATUS_UPDATED_EXTRA, isPlaying);
+        sendBroadcast(songStatusUpdateIntent);
+    }
 
     private void initMediaPlayer() {
         mediaPlayer = new MediaPlayer();
@@ -282,6 +371,75 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     }
 
 
+    private Notification createNotification(String title, String text, boolean play) {
+
+        createNotificationChannel();
+        final Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        notificationIntent.setAction(Intent.ACTION_MAIN);
+        notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        Intent nextIntent = new Intent(this, AudioService.class);
+        nextIntent.setAction(ACTION_NEXT);
+
+        Intent previousIntent = new Intent(this, AudioService.class);
+        previousIntent.setAction(ACTION_PREVIOUS);
+
+        Intent playIntent = new Intent(this, AudioService.class);
+        playIntent.setAction(ACTION_PLAY);
+
+        Intent resumeIntent = new Intent(this, AudioService.class);
+        resumeIntent.setAction(ACTION_RESUME);
+
+        Intent pauseIntent = new Intent(this, AudioService.class);
+        pauseIntent.setAction(ACTION_PAUSE);
+
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, notificationIntent, 0);
+
+        PendingIntent nextPendingIntent =
+                PendingIntent.getService(this, 0, nextIntent, 0);
+
+        PendingIntent previousPendingIntent =
+                PendingIntent.getService(this, 0, previousIntent, 0);
+
+        PendingIntent playPendingIntent =
+                PendingIntent.getService(this, 0, playIntent, 0);
+
+        PendingIntent resumePendingIntent =
+                PendingIntent.getService(this, 0, resumeIntent, 0);
+
+        PendingIntent pausePendingIntent =
+                PendingIntent.getService(this, 0, pauseIntent, 0);
+
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentIntent(pendingIntent)
+                .addAction(R.drawable.ic_launcher_background, getString(R.string.next),
+                        nextPendingIntent)
+                .addAction(R.drawable.ic_launcher_background, getString(R.string.previous),
+                        previousPendingIntent);
+
+        if (play) {
+            if (playbackPosition == -1) {
+                notification.addAction(R.drawable.ic_launcher_background, getString(R.string.play),
+                        playPendingIntent);
+            } else {
+                notification.addAction(R.drawable.ic_launcher_background, getString(R.string.play),
+                        resumePendingIntent);
+            }
+
+        } else {
+            notification.addAction(R.drawable.ic_launcher_background, getString(R.string.stop),
+                    pausePendingIntent);
+        }
+
+        return notification.build();
+    }
+
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
         //Invoked indicating buffering status of
@@ -292,6 +450,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     public void onCompletion(MediaPlayer mp) {
         //Invoked when playback of a media source has completed.
         //stop the service
+        playNextTrack();
     }
 
     @Override
@@ -362,6 +521,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             stopMedia();
             mediaPlayer.release();
         }
+        timer.cancel();
         removeAudioFocus();
     }
 

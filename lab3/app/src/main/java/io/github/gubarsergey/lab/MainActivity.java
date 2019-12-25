@@ -17,6 +17,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -35,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     private Button nextSongButton;
     private Button previousSongButton;
     private Button playButton;
+    private CheckBox isShuffleCheckbox;
+    private CheckBox isRepeatCheckbox;
+    private TextView timeTextView;
     private SeekBar progressSeekbar;
     private TextView currentTrackTextView;
     private Track currentTrack;
@@ -43,11 +48,15 @@ public class MainActivity extends AppCompatActivity {
 
     private BroadcastReceiver songUpdateReceiver;
     private BroadcastReceiver songTimeUpdateReceiver;
+    private BroadcastReceiver songStatusUpdateReceiver;
 
     public static final String ACTION_SONG_UPDATED = "ACTION_SONG_NAME_UPDATED";
     public static final String ACTION_SONG_UPDATED_EXTRA = "ACTION_SONG_UPDATED_EXTRA";
     public static final String ACTION_SONG_TIME_UPDATED = "ACTION_SONG_TIME_UPDATED";
     public static final String ACTION_SONG_TIME_UPDATED_EXTRA = "ACTION_SONG_TIME_UPDATED_EXTRA";
+    public static final String ACTION_SONG_STATUS_UPDATED = "ACTION_SONG_STATUS_UPDATED";
+    public static final String ACTION_SONG_STATUS_UPDATED_EXTRA = "ACTION_SONG_STATUS_UPDATED_EXTRA";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +89,18 @@ public class MainActivity extends AppCompatActivity {
         playButton = findViewById(R.id.button_play);
         progressSeekbar = findViewById(R.id.progress_seekbar);
         currentTrackTextView = findViewById(R.id.current_text_view);
+        timeTextView = findViewById(R.id.song_time_text_view);
+        isRepeatCheckbox = findViewById(R.id.repeat_checkbox);
+        isShuffleCheckbox = findViewById(R.id.shuffle_checkbox);
+
+        isRepeatCheckbox.setOnCheckedChangeListener((compoundButton, b) -> startService(AudioService.makeRepeatChangedIntent(this, b)));
+        isShuffleCheckbox.setOnCheckedChangeListener((compoundButton, b) -> startService(AudioService.makeShuffleChangedIntent(this, b)));
+
         playButton.setOnClickListener(v -> {
             if (currentTrack == null) return;
             if (playerState == PlayerState.STOPPED) {
-                setPlayerState(PlayerState.PLAYING);
                 resumeTrack();
             } else {
-                setPlayerState(PlayerState.STOPPED);
                 pauseTrack();
             }
         });
@@ -145,14 +159,37 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 int songTime = (int) intent.getLongExtra(ACTION_SONG_TIME_UPDATED_EXTRA, 0);
-                Log.d(TAG, "onReceive: song time update " + songTime);
                 progressSeekbar.setProgress(songTime);
+
+                String timeLabel;
+                int min = songTime / 1000 / 60;
+                int sec = songTime / 1000 % 60;
+
+                timeLabel = min + ":";
+                if (sec < 10) timeLabel += "0";
+                timeLabel += sec;
+
+                timeTextView.setText(timeLabel);
             }
         };
 
+        IntentFilter songStatusUpdateFilter = new IntentFilter();
+        songStatusUpdateFilter.addAction(ACTION_SONG_STATUS_UPDATED);
+        songStatusUpdateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                boolean isPlaying = intent.getBooleanExtra(ACTION_SONG_STATUS_UPDATED_EXTRA, false);
+                if (isPlaying) {
+                    setPlayerState(PlayerState.PLAYING);
+                } else {
+                    setPlayerState(PlayerState.STOPPED);
+                }
+            }
+        };
 
         registerReceiver(songUpdateReceiver, songUpdateFilter);
         registerReceiver(songTimeUpdateReceiver, songTimeUpdateFilter);
+        registerReceiver(songStatusUpdateReceiver, songStatusUpdateFilter);
     }
 
     private void setPlayerState(PlayerState playerState) {
@@ -160,9 +197,11 @@ public class MainActivity extends AppCompatActivity {
         switch (this.playerState) {
             case PLAYING:
                 playButton.setText(R.string.stop);
+                progressSeekbar.setEnabled(true);
                 break;
             case STOPPED:
                 playButton.setText(R.string.start);
+                progressSeekbar.setEnabled(false);
                 break;
         }
     }
@@ -228,11 +267,6 @@ public class MainActivity extends AppCompatActivity {
         ContextCompat.startForegroundService(this, serviceIntent);
     }
 
-    private void stopService() {
-        Intent serviceIntent = new Intent(this, AudioService.class);
-        stopService(serviceIntent);
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -245,6 +279,12 @@ public class MainActivity extends AppCompatActivity {
             unregisterReceiver(songTimeUpdateReceiver);
             songTimeUpdateReceiver = null;
         }
-//        stopService();
+
+        if (songStatusUpdateReceiver != null) {
+            unregisterReceiver(songStatusUpdateReceiver);
+            songStatusUpdateReceiver = null;
+        }
+
+        startService(AudioService.makeDieIntent(this));
     }
 }

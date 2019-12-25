@@ -11,7 +11,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/current_text_view"
+        app:layout_constraintBottom_toTopOf="@+id/repeat_checkbox"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -70,5 +70,34 @@
         app:layout_constraintBottom_toTopOf="@+id/button_play"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <CheckBox
+        android:id="@+id/shuffle_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/shuffle"
+        app:layout_constraintBottom_toTopOf="@+id/current_text_view"
+        app:layout_constraintStart_toStartOf="@+id/current_text_view" />
+
+    <CheckBox
+        android:id="@+id/repeat_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/repeat"
+        app:layout_constraintBottom_toBottomOf="@+id/shuffle_checkbox"
+        app:layout_constraintStart_toEndOf="@+id/shuffle_checkbox"
+        app:layout_constraintTop_toTopOf="@+id/shuffle_checkbox" />
+
+    <TextView
+        android:id="@+id/song_time_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="@string/time"
+        app:layout_constraintBottom_toBottomOf="@+id/repeat_checkbox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/repeat_checkbox" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

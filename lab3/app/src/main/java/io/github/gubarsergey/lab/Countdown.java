@@ -59,11 +59,9 @@ public class Countdown {
 
 
     private void setupNewTimer() {
-        Log.d(TAG, "setupNewTimer");
         this.timer = new CountDownTimer(toCompletion, tick) {
             @Override
             public void onTick(long l) {
-                Log.d(TAG, "toCompletion tick elapsed" + toCompletion + " " + tick + " " + elapsed);
                 toCompletion -= tick;
                 elapsed += tick;
                 listener.onTick(elapsed);

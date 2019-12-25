@@ -5,4 +5,11 @@
     <string name="more"><![CDATA[>]]></string>
     <string name="less"><![CDATA[<]]></string>
     <string name="current_track">Current track</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="repeat">Repeat</string>
+    <string name="time">Time</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="play">Play</string>
+    <string name="resume">Resume</string>
 </resources>
