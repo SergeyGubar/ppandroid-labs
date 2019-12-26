@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ACTION_SONG_STATUS_UPDATED_EXTRA = "ACTION_SONG_STATUS_UPDATED_EXTRA";
 
     public static final String SONG_INFO_EXTRA_TRACK = "SONG_INFO_EXTRA_TRACK";
+    public static final String SONG_INFO_EXTRA_PLAY_STATE = "SONG_INFO_EXTRA_PLAY_STATE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         if (currentTrack != null) {
             outState.putParcelable(SONG_INFO_EXTRA_TRACK, currentTrack);
+            outState.putSerializable(SONG_INFO_EXTRA_PLAY_STATE, playerState);
         }
     }
 
@@ -87,9 +90,10 @@ public class MainActivity extends AppCompatActivity {
         super.onRestoreInstanceState(savedInstanceState);
 
         Track track = savedInstanceState.getParcelable(SONG_INFO_EXTRA_TRACK);
+        PlayerState state = (PlayerState) savedInstanceState.getSerializable(SONG_INFO_EXTRA_PLAY_STATE);
         if (track != null) {
             this.currentTrack = track;
-            setPlayerState(PlayerState.PLAYING);
+            setPlayerState(state);
             progressSeekbar.setMax(track.totalTime);
             currentTrackTextView.setText(track.name + " by " + track.author);
         }
@@ -306,6 +310,6 @@ public class MainActivity extends AppCompatActivity {
             songStatusUpdateReceiver = null;
         }
 
-        startService(AudioService.makeDieIntent(this));
+//        startService(AudioService.makeDieIntent(this));
     }
 }
