@@ -42,8 +42,11 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox isRepeatCheckbox;
     private TextView timeTextView;
     private SeekBar progressSeekbar;
+    private SeekBar volumeSeekbar;
     private TextView currentTrackTextView;
     private Track currentTrack;
+
+    private float volume = 1.0f;
 
     private PlayerState playerState = PlayerState.STOPPED;
 
@@ -60,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String SONG_INFO_EXTRA_TRACK = "SONG_INFO_EXTRA_TRACK";
     public static final String SONG_INFO_EXTRA_PLAY_STATE = "SONG_INFO_EXTRA_PLAY_STATE";
+    public static final String VOLUME_STATE = "VOLUME_STATE";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         if (currentTrack != null) {
             outState.putParcelable(SONG_INFO_EXTRA_TRACK, currentTrack);
             outState.putSerializable(SONG_INFO_EXTRA_PLAY_STATE, playerState);
+            outState.putFloat(VOLUME_STATE, volume);
         }
     }
 
@@ -91,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
 
         Track track = savedInstanceState.getParcelable(SONG_INFO_EXTRA_TRACK);
         PlayerState state = (PlayerState) savedInstanceState.getSerializable(SONG_INFO_EXTRA_PLAY_STATE);
+        this.volume = savedInstanceState.getFloat(VOLUME_STATE);
+        volumeSeekbar.setProgress((int)(volume * 10));
         if (track != null) {
             this.currentTrack = track;
             setPlayerState(state);
@@ -113,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         previousSongButton = findViewById(R.id.button_previous);
         playButton = findViewById(R.id.button_play);
         progressSeekbar = findViewById(R.id.progress_seekbar);
+        volumeSeekbar = findViewById(R.id.volume_seekbar);
         currentTrackTextView = findViewById(R.id.current_text_view);
         timeTextView = findViewById(R.id.song_time_text_view);
         isRepeatCheckbox = findViewById(R.id.repeat_checkbox);
@@ -147,6 +156,28 @@ public class MainActivity extends AppCompatActivity {
                         if (fromUser) {
                             startService(AudioService.makeProgressChangedIntent(MainActivity.this, progress));
                             progressSeekbar.setProgress(progress);
+                        }
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                }
+        );
+
+        volumeSeekbar.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        if (fromUser) {
+                            volume = progress / 10.0f;
+                            startService(AudioService.makeVolumeChangeIntent(MainActivity.this, volume));
                         }
                     }
 

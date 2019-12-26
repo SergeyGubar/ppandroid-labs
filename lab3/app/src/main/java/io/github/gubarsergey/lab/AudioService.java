@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
@@ -58,6 +59,9 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private static final String ACTION_REPEAT_CHANGED = "ACTION_REPEAT_CHANGED";
     private static final String ACTION_REPEAT_CHANGED_EXTRA = "ACTION_REPEAT_CHANGED_EXTRA";
+
+    private static final String ACTION_VOLUME_CHANGE = "ACTION_VOLUME_CHANGE";
+    private static final String ACTION_VOLUME_CHANGE_EXTRA = "ACTION_VOLUME_CHANGE_EXTRA";
 
     private static final String DIE_MODE = "DIE_MODE";
 
@@ -122,6 +126,13 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         return intent;
     }
 
+        public static Intent makeVolumeChangeIntent(Context context, float volume) {
+        Intent intent = new Intent(context, AudioService.class);
+        intent.setAction(ACTION_VOLUME_CHANGE);
+        intent.putExtra(ACTION_VOLUME_CHANGE_EXTRA, volume);
+        return intent;
+    }
+
     public static Intent makeDieIntent(Context context) {
         Intent intent = new Intent(context, AudioService.class);
         intent.setAction(DIE_MODE);
@@ -168,6 +179,12 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             case ACTION_SHUFFLE_CHANGED:
                 boolean isShuffle = intent.getBooleanExtra(ACTION_SHUFFLE_CHANGED_EXTRA, false);
                 this.isShuffleMode = isShuffle;
+                break;
+            case ACTION_VOLUME_CHANGE:
+                float value = intent.getFloatExtra(ACTION_VOLUME_CHANGE_EXTRA, 1f);
+                if (this.mediaPlayer != null) {
+                    this.mediaPlayer.setVolume(value, value);
+                }
                 break;
             case ACTION_PAUSE:
                 pauseMedia();
