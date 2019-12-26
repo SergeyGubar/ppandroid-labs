@@ -57,12 +57,12 @@ public class MainActivity extends AppCompatActivity {
     public static final String ACTION_SONG_STATUS_UPDATED = "ACTION_SONG_STATUS_UPDATED";
     public static final String ACTION_SONG_STATUS_UPDATED_EXTRA = "ACTION_SONG_STATUS_UPDATED_EXTRA";
 
+    public static final String SONG_INFO_EXTRA_TRACK = "SONG_INFO_EXTRA_TRACK";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(TAG, "onCreate");
         registerReceivers();
         initViews();
         startAudioService();
@@ -71,6 +71,27 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_REQUEST_CODE);
         } else {
             initTracks();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (currentTrack != null) {
+            outState.putParcelable(SONG_INFO_EXTRA_TRACK, currentTrack);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        Track track = savedInstanceState.getParcelable(SONG_INFO_EXTRA_TRACK);
+        if (track != null) {
+            this.currentTrack = track;
+            setPlayerState(PlayerState.PLAYING);
+            progressSeekbar.setMax(track.totalTime);
+            currentTrackTextView.setText(track.name + " by " + track.author);
         }
     }
 
