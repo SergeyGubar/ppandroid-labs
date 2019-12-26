@@ -38,9 +38,17 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+
         float degree = Math.round(event.values[0]);
 
-        topText.setText("Heading: " + degree + " degrees");
+        // Don't ask
+//        degree -= 113;
+
+        if (degree > 0) {
+            topText.setText("Heading: " + degree + " degrees");
+        } else {
+            topText.setText("Heading: " + (360 + degree) + " degrees");
+        }
 
         RotateAnimation ra = new RotateAnimation(
                 currentDegree,
